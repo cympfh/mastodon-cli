@@ -17,6 +17,6 @@
 ### example
 
 ```bash
-./mast report "Hi world!"
+./mast toot "Hi world!"
 ```
 

@@ -10,7 +10,7 @@ mast -- mastdron
 mast home
     home timeline
 
-mast report "<status>"
+mast toot "<status>"
     toot (tweet) a text
 USAGE
 }
@@ -56,7 +56,7 @@ home() {
         "$SERVER/api/v1/timelines/home"
 }
 
-report() {
+toot() {
     curl -s -XPOST \
         -H "Authorization: Bearer $(get-token)" \
         "$SERVER/api/v1/statuses" \
@@ -69,8 +69,8 @@ case "$1" in
     home )
         home
         ;;
-    report )
-        report "$2"
+    toot | report )
+        toot "$2"
         ;;
     * )
         usage
