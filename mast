@@ -73,7 +73,7 @@ case "$1" in
         report "$2"
         ;;
     * )
-        help
+        usage
         exit
         ;;
 esac
