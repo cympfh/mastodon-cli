@@ -1,0 +1,79 @@
+#!/bin/bash
+
+[ -d ~/.mast ] || mkdir ~/.mast
+SERVER=https://kirakiratter.com
+
+usage() {
+    cat <<USAGE
+mast -- mastdron
+
+mast home
+    home timeline
+
+mast report "<status>"
+    toot (tweet) a text
+USAGE
+}
+
+# my app (call/cc)
+# APP_ID=94
+CLIENT_ID=19a7d31d636cb1a2f8b305ebe674605fd683d4de72de4f83dc48f0ab8d316432
+CLIENT_SECRET=1c12afc21da0447a5ec127f6f4f6e5873c22343073b8dab8d0f3b6d52ef6fcf5
+
+# helpers
+browser-open() {
+    if which firefox >/dev/null; then
+        firefox "$1"
+    else
+        open -a 'Google Chrome' "$1"
+    fi
+}
+
+get-token() {
+    jq -r .access_token ~/.mast/auth.json
+}
+
+# commands
+auth() {
+    REDIRECT_URI="urn:ietf:wg:oauth:2.0:oob"
+    browser-open "$SERVER/oauth/authorize?client_id=$CLIENT_ID&response_type=code&redirect_uri=$REDIRECT_URI&scope=read%20write%20follow"
+
+    echo -n "copy&paste CODE> "
+    read CODE
+
+    curl -s -X POST \
+        -F "client_id=$CLIENT_ID" \
+        -F "client_secret=$CLIENT_SECRET" \
+        -F "grant_type=authorization_code" \
+        -F "redirect_uri=$REDIRECT_URI" \
+        -F "code=$CODE" \
+        "$SERVER/oauth/token" > ~/.mast/auth.json
+}
+
+home() {
+    curl -s -XGET \
+        -H "Authorization: Bearer $(get-token)" \
+        "$SERVER/api/v1/timelines/home"
+}
+
+report() {
+    curl -s -XPOST \
+        -H "Authorization: Bearer $(get-token)" \
+        "$SERVER/api/v1/statuses" \
+        -d "status=$1"
+}
+
+# main
+
+case "$1" in
+    home )
+        home
+        ;;
+    report )
+        report "$2"
+        ;;
+    * )
+        help
+        exit
+        ;;
+esac
