@@ -53,7 +53,16 @@ auth() {
 home() {
     curl -s -XGET \
         -H "Authorization: Bearer $(get-token)" \
-        "$SERVER/api/v1/timelines/home"
+        "$SERVER/api/v1/timelines/home" |
+    jq -r 'reverse | .[] |
+        {
+            id,
+            created_at,
+            name: .account.username,
+            nick: .account.display_name,
+            text: .content | gsub("<.?p>"; "")
+        } |
+        "\u001b[33m\(.nick) \u001b[91m@\(.name) \u001b[33m\(.created_at) \u001b[37m\(.id) \n\u001b[0m  \(.text)"'
 }
 
 toot() {
