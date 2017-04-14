@@ -1,6 +1,7 @@
 ## requiments
 
 - bash/zsh
+- curl
 - jq
 
 ## reference
@@ -15,6 +16,16 @@
 ```
 
 ### example
+
+#### make Auth
+
+```bash
+./mast auth
+(browser)
+(copy&paste code)
+```
+
+#### toot
 
 ```bash
 ./mast toot "Hi world!"

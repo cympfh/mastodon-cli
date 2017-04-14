@@ -5,7 +5,10 @@ SERVER=https://kirakiratter.com
 
 usage() {
     cat <<USAGE
-mast -- mastdron
+mast -- mastodon
+
+mast auth
+    authorization with your mastodon account (appname: call/cc)
 
 mast home
     home timeline
@@ -75,6 +78,9 @@ toot() {
 # main
 
 case "$1" in
+    auth )
+        auth
+        ;;
     home )
         home
         ;;
