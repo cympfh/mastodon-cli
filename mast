@@ -6,6 +6,8 @@ usage() {
     cat <<USAGE
 mast -- mastodon
 
+# config
+
 mast server "<server-name>"
     setting a mastodon server
     server-name begins with http:// or https://
@@ -16,14 +18,25 @@ mast create-app "<app-name>"
 mast auth
     auth your account with your app
 
+# get timeline
+
 mast home
     home timeline
 
 mast public [--local]
     public timeline
 
+# post
+
 mast toot "<status>"
     toot (tweet) a text
+
+mast reblog [--rm] "<status-id>"
+    create (or destroy) a reblog
+
+mast fav [--rm] "<status-id>"
+    create (or destroy) a fav
+
 USAGE
 }
 
@@ -128,6 +141,34 @@ toot() {
         -d "status=$1"
 }
 
+reblog() {
+    SERVER=$(server-name)
+    curl -s -XPOST \
+        -H "Authorization: Bearer $(user-token)" \
+        "$SERVER/api/v1/statuses/$1/reblog"
+}
+
+reblog-rm() {
+    SERVER=$(server-name)
+    curl -s -XPOST \
+        -H "Authorization: Bearer $(user-token)" \
+        "$SERVER/api/v1/statuses/$1/unreblog"
+}
+
+fav() {
+    SERVER=$(server-name)
+    curl -s -XPOST \
+        -H "Authorization: Bearer $(user-token)" \
+        "$SERVER/api/v1/statuses/$1/favourite"
+}
+
+fav-rm() {
+    SERVER=$(server-name)
+    curl -s -XPOST \
+        -H "Authorization: Bearer $(user-token)" \
+        "$SERVER/api/v1/statuses/$1/unfavourite"
+}
+
 # main
 
 case "$1" in
@@ -148,6 +189,20 @@ case "$1" in
         ;;
     toot | report )
         toot "$2"
+        ;;
+    reblog )
+        if [ "$2" = "--rm" ]; then
+            reblog-rm "$3"
+        else
+            reblog "$2"
+        fi
+        ;;
+    fav )
+        if [ "$2" = "--rm" ]; then
+            fav-rm "$3"
+        else
+            fav "$2"
+        fi
         ;;
     * )
         usage
