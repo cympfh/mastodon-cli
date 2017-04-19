@@ -135,10 +135,21 @@ public() {
 
 toot() {
     SERVER=$(server-name)
+    MSG=
+
+    while [ "_$1" != "_" ]; do
+      if [ "_$MSG" == "_" ]; then
+        MSG="$1"
+      else
+        MSG="$MSG $1"
+      fi
+      shift
+    done
+
     curl -s -XPOST \
         -H "Authorization: Bearer $(user-token)" \
         "$SERVER/api/v1/statuses" \
-        -d "status=$1"
+        -d "status=$MSG"
 }
 
 reblog() {
@@ -188,7 +199,8 @@ case "$1" in
         public "$2"
         ;;
     toot | report )
-        toot "$2"
+        shift
+        toot "$@"
         ;;
     reblog )
         if [ "$2" = "--rm" ]; then
