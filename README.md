@@ -15,15 +15,22 @@
 ./mast help
 ```
 
-### example
-
-#### make Auth
+### init
 
 ```bash
+# mastodon server
+./mast server https://kirakiratter.com/
+
+# make your app
+./mast create-app "(app-name)"
+
+# auth your account
 ./mast auth
-(browser)
+(auth on your browser)
 (copy&paste code)
 ```
+
+All auth files are saved in `~/.mast`.
 
 #### toot
 

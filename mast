@@ -1,14 +1,20 @@
 #!/bin/bash
 
 [ -d ~/.mast ] || mkdir ~/.mast
-SERVER=https://kirakiratter.com
 
 usage() {
     cat <<USAGE
 mast -- mastodon
 
+mast server "<server-name>"
+    setting a mastodon server
+    server-name begins with http:// or https://
+
+mast create-app "<app-name>"
+    make your app on the server
+
 mast auth
-    authorization with your mastodon account (appname: call/cc)
+    auth your account with your app
 
 mast home
     home timeline
@@ -18,12 +24,23 @@ mast toot "<status>"
 USAGE
 }
 
-# my app (call/cc)
-# APP_ID=94
-CLIENT_ID=19a7d31d636cb1a2f8b305ebe674605fd683d4de72de4f83dc48f0ab8d316432
-CLIENT_SECRET=1c12afc21da0447a5ec127f6f4f6e5873c22343073b8dab8d0f3b6d52ef6fcf5
-
 # helpers
+server-name() {
+    if [ -f ~/.mast/server ]; then
+        cat ~/.mast/server
+    else
+        false
+    fi
+}
+
+app-token() {
+    if [ -f ~/.mast/app.json ]; then
+        jq -r '"\(.client_id)\n\(.client_secret)"' ~/.mast/app.json
+    else
+        false
+    fi
+}
+
 browser-open() {
     if which firefox >/dev/null; then
         firefox "$1"
@@ -32,13 +49,29 @@ browser-open() {
     fi
 }
 
-get-token() {
+user-token() {
     jq -r .access_token ~/.mast/auth.json
 }
 
 # commands
-auth() {
+server() {
+    echo "$1" > ~/.mast/server
+    echo "Your mastodon server is $(cat ~/.mast/server)"
+}
+
+create-app() {
+    SERVER=$(server-name)
+    CLIENT_NAME="$1"
     REDIRECT_URI="urn:ietf:wg:oauth:2.0:oob"
+    curl -s -XPOST "$SERVER/api/v1/apps" -d "client_name=$CLIENT_NAME&redirect_uris=$REDIRECT_URI&scopes=read%20write%20follow" > ~/.mast/app.json
+}
+
+auth() {
+    SERVER=$(server-name)
+    REDIRECT_URI="urn:ietf:wg:oauth:2.0:oob"
+    CLIENT_ID=$(app-token | head -1)
+    CLIENT_SECRET=$(app-token | tail -1)
+
     browser-open "$SERVER/oauth/authorize?client_id=$CLIENT_ID&response_type=code&redirect_uri=$REDIRECT_URI&scope=read%20write%20follow"
 
     echo -n "copy&paste CODE> "
@@ -54,8 +87,9 @@ auth() {
 }
 
 home() {
+    SERVER=$(server-name)
     curl -s -XGET \
-        -H "Authorization: Bearer $(get-token)" \
+        -H "Authorization: Bearer $(user-token)" \
         "$SERVER/api/v1/timelines/home" |
     jq -r 'reverse | .[] |
         {
@@ -69,8 +103,9 @@ home() {
 }
 
 toot() {
+    SERVER=$(server-name)
     curl -s -XPOST \
-        -H "Authorization: Bearer $(get-token)" \
+        -H "Authorization: Bearer $(user-token)" \
         "$SERVER/api/v1/statuses" \
         -d "status=$1"
 }
@@ -78,6 +113,12 @@ toot() {
 # main
 
 case "$1" in
+    server )
+        server "$2"
+        ;;
+    create-app )
+        create-app "$2"
+        ;;
     auth )
         auth
         ;;
