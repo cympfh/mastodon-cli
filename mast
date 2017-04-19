@@ -47,8 +47,12 @@ app-token() {
 browser-open() {
     if which firefox >/dev/null; then
         firefox "$1"
-    else
+    elif [ -d /Applications ]; then
         open -a 'Google Chrome' "$1"
+    else
+        echo "No available browser"
+        echo "Manually, open $1"
+        false
     fi
 }
 
