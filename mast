@@ -19,6 +19,9 @@ mast auth
 mast home
     home timeline
 
+mast public [--local]
+    public timeline
+
 mast toot "<status>"
     toot (tweet) a text
 USAGE
@@ -86,11 +89,10 @@ auth() {
         "$SERVER/oauth/token" > ~/.mast/auth.json
 }
 
-home() {
+timeline-from() {
+    echo "FROM $1"
     SERVER=$(server-name)
-    curl -s -XGET \
-        -H "Authorization: Bearer $(user-token)" \
-        "$SERVER/api/v1/timelines/home" |
+    curl -s -XGET -H "Authorization: Bearer $(user-token)" "$SERVER/$1" |
     jq -r 'reverse | .[] |
         {
             id,
@@ -100,6 +102,18 @@ home() {
             text: .content
         } |
         "\u001b[33m\(.nick) \u001b[91m@\(.name) \u001b[33m\(.created_at) \u001b[37m\(.id) \n\u001b[0m  \(.text)"'
+}
+
+home() {
+    timeline-from "$SERVER/api/v1/timelines/home"
+}
+
+public() {
+    if [ "$2" = "--local" ]; then
+        timeline-from "$SERVER/api/v1/timelines/public?local"
+    else
+        timeline-from "$SERVER/api/v1/timelines/public"
+    fi
 }
 
 toot() {
@@ -124,6 +138,9 @@ case "$1" in
         ;;
     home )
         home
+        ;;
+    public )
+        public "$2"
         ;;
     toot | report )
         toot "$2"
