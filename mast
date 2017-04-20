@@ -107,7 +107,6 @@ auth() {
 }
 
 timeline-from() {
-    echo "FROM $1"
     SERVER=$(server-name)
     curl -s -XGET -H "Authorization: Bearer $(user-token)" "$SERVER/$1" |
     jq -r 'reverse | .[] |
@@ -116,20 +115,25 @@ timeline-from() {
             created_at,
             name: .account.username,
             nick: .account.display_name,
-            text: .content
+            text: .content,
+            reblog
         } |
-        "\u001b[33m\(.nick) \u001b[91m@\(.name) \u001b[33m\(.created_at) \u001b[37m\(.id) \n\u001b[0m  \(.text)"'
+        if .reblog == null then
+            "\u001b[33m\(.nick) \u001b[91m@\(.name) \u001b[33m\(.created_at) \u001b[37m\(.id) \n\u001b[0m  \(.text)"
+        else
+            "\u001b[33m\(.nick) \u001b[91m@\(.name) \n\u001b[0m  rebooted something"
+        end'
 }
 
 home() {
-    timeline-from "$SERVER/api/v1/timelines/home"
+    timeline-from "/api/v1/timelines/home"
 }
 
 public() {
     if [ "$2" = "--local" ]; then
-        timeline-from "$SERVER/api/v1/timelines/public?local"
+        timeline-from "/api/v1/timelines/public?local=local"
     else
-        timeline-from "$SERVER/api/v1/timelines/public"
+        timeline-from "/api/v1/timelines/public"
     fi
 }
 
