@@ -37,6 +37,9 @@ mast public [--local]
 mast toot "<status>"
     toot (tweet) a text
 
+mast toot --rm "<status-id>"
+    delete your toot
+
 mast reblog [--rm] "<status-id>"
     create (or destroy) a reblog
 
@@ -179,6 +182,13 @@ toot() {
         -d "status=$MSG"
 }
 
+toot-rm() {
+    URL="https://$(server)/api/v1/statuses/$1"
+    curl -s -XDELETE \
+        -H "Authorization: Bearer $(user-token)" \
+        "$URL"
+}
+
 reblog() {
     URL="https://$(server)/api/v1/statuses/$1/reblog"
     curl -s -XPOST \
@@ -231,8 +241,12 @@ case "$1" in
         public "$2"
         ;;
     toot | report )
-        shift
-        toot "$@"
+        if [ "$2" = "--rm" ]; then
+            toot-rm "$3"
+        else
+            shift
+            toot "$@"
+        fi
         ;;
     reblog )
         if [ "$2" = "--rm" ]; then
