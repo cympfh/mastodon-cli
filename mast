@@ -8,9 +8,15 @@ mast -- mastodon
 
 # config
 
-mast server "<server-name>"
-    setting a mastodon server
-    server-name begins with http:// or https://
+mast use "<server-url>"
+    setting a mastodon server (instance)
+    DONT contain https:// or /
+    example)
+        mast use pawoo.net
+        mast use friends.nico
+
+mast use
+    check the current using server (instance)
 
 mast create-app "<app-name>"
     make your app on the server
@@ -41,17 +47,18 @@ USAGE
 }
 
 # helpers
-server-name() {
-    if [ -f ~/.mast/server ]; then
-        cat ~/.mast/server
+server() {
+    if [ -f ~/.mast/default ]; then
+        < ~/.mast/default tr -d '\n'
     else
         false
     fi
 }
 
 app-token() {
-    if [ -f ~/.mast/app.json ]; then
-        jq -r '"\(.client_id)\n\(.client_secret)"' ~/.mast/app.json
+    F="$HOME/.mast/$(server)/app.json"
+    if [ -f "$F" ]; then
+        jq -r '"\(.client_id)\n\(.client_secret)"' "$F"
     else
         false
     fi
@@ -70,32 +77,44 @@ browser-open() {
 }
 
 user-token() {
-    jq -r .access_token ~/.mast/auth.json
+    F="$HOME/.mast/$(server)/auth.json"
+    if [ -f "$F" ]; then
+        jq -r '.access_token' "$F"
+    else
+        false
+    fi
 }
 
 # commands
-server() {
-    echo "$1" > ~/.mast/server
-    echo "Your mastodon server is $(cat ~/.mast/server)"
+use() {
+    if [ ! -d ~/.mast/"$1" ]; then
+        mkdir ~/.mast/"$1"
+    fi
+    echo "$1" > ~/.mast/default
+    echo "Your mastodon server is https://$(server)/"
 }
 
 create-app() {
-    SERVER=$(server-name)
+    URL="https://$(server)/api/v1/apps"
     CLIENT_NAME="$1"
     REDIRECT_URI="urn:ietf:wg:oauth:2.0:oob"
-    curl -s -XPOST "$SERVER/api/v1/apps" -d "client_name=$CLIENT_NAME&redirect_uris=$REDIRECT_URI&scopes=read%20write%20follow" > ~/.mast/app.json
+    F="$HOME/.mast/$(server)/app.json"
+    curl -s -XPOST "$URL" -d "client_name=$CLIENT_NAME&redirect_uris=$REDIRECT_URI&scopes=read%20write%20follow" >"$F"
 }
 
 auth() {
-    SERVER=$(server-name)
+    AUTH_URL="https://$(server)/oauth/authorize"
     REDIRECT_URI="urn:ietf:wg:oauth:2.0:oob"
     CLIENT_ID=$(app-token | head -1)
     CLIENT_SECRET=$(app-token | tail -1)
 
-    browser-open "$SERVER/oauth/authorize?client_id=$CLIENT_ID&response_type=code&redirect_uri=$REDIRECT_URI&scope=read%20write%20follow"
+    browser-open "${AUTH_URL}?client_id=$CLIENT_ID&response_type=code&redirect_uri=$REDIRECT_URI&scope=read%20write%20follow"
 
     echo -n "copy&paste CODE> "
     read CODE
+
+    TOKEN_URL="https://$(server)/oauth/token"
+    F="$HOME/.mast/$(server)/auth.json"
 
     curl -s -X POST \
         -F "client_id=$CLIENT_ID" \
@@ -103,12 +122,12 @@ auth() {
         -F "grant_type=authorization_code" \
         -F "redirect_uri=$REDIRECT_URI" \
         -F "code=$CODE" \
-        "$SERVER/oauth/token" > ~/.mast/auth.json
+        "$TOKEN_URL" > "$F"
 }
 
 timeline-from() {
-    SERVER=$(server-name)
-    curl -s -XGET -H "Authorization: Bearer $(user-token)" "$SERVER/$1" |
+    URL="https://$(server)/$1"
+    curl -s -XGET -H "Authorization: Bearer $(user-token)" "$URL" |
     jq -r 'reverse | .[] |
         {
             id,
@@ -138,7 +157,7 @@ public() {
 }
 
 toot() {
-    SERVER=$(server-name)
+    URL="https://$(server)/api/v1/statuses"
     MSG=
 
     while [ "_$1" != "_" ]; do
@@ -152,43 +171,48 @@ toot() {
 
     curl -s -XPOST \
         -H "Authorization: Bearer $(user-token)" \
-        "$SERVER/api/v1/statuses" \
+        "$URL" \
         -d "status=$MSG"
 }
 
 reblog() {
-    SERVER=$(server-name)
+    URL="https://$(server)/api/v1/statuses/$1/reblog"
     curl -s -XPOST \
         -H "Authorization: Bearer $(user-token)" \
-        "$SERVER/api/v1/statuses/$1/reblog"
+        "$URL"
 }
 
 reblog-rm() {
-    SERVER=$(server-name)
+    URL="https://$(server)/api/v1/statuses/$1/unreblog"
     curl -s -XPOST \
         -H "Authorization: Bearer $(user-token)" \
-        "$SERVER/api/v1/statuses/$1/unreblog"
+        "$URL"
 }
 
 fav() {
-    SERVER=$(server-name)
+    URL="https://$(server)/api/v1/statuses/$1/favourite"
     curl -s -XPOST \
         -H "Authorization: Bearer $(user-token)" \
-        "$SERVER/api/v1/statuses/$1/favourite"
+        "$URL"
 }
 
 fav-rm() {
-    SERVER=$(server-name)
+    URL="https://$(server)/api/v1/statuses/$1/unfavourite"
     curl -s -XPOST \
         -H "Authorization: Bearer $(user-token)" \
-        "$SERVER/api/v1/statuses/$1/unfavourite"
+        "$URL"
 }
 
 # main
 
 case "$1" in
-    server )
-        server "$2"
+    use )
+        if [ $# -eq 1 ]; then
+            server
+            echo
+        else
+            use "$2"
+        fi
         ;;
     create-app )
         create-app "$2"

@@ -1,3 +1,7 @@
+# mastodon CLI client
+
+suppoting mutli instances
+
 ## requiments
 
 - bash/zsh
@@ -18,19 +22,31 @@
 ### init
 
 ```bash
-# mastodon server
-./mast server https://kirakiratter.com/
+# register a mastodon instance (server)
+$ ./mast use kirakiratter.com
 
-# make your app
-./mast create-app "(app-name)"
+# `mast use` command can switch to another instance
+$ ./mast use friends.nico
+
+# check the default instance
+$ ./mast use
+friends.nico
+
+# make your app (API client)
+$ ./mast create-app "(app-name)"
+
+# this command save a config file:
+# ~/.mast/(server)/app.json
 
 # auth your account
 ./mast auth
 (auth on your browser)
 (copy&paste code)
-```
 
-All auth files are saved in `~/.mast`.
+# this command save a config file:
+# ~/.mast/(server)/auth.json
+
+```
 
 #### toot
 
