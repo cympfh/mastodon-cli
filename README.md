@@ -1,6 +1,6 @@
 # mastodon CLI client
 
-suppoting mutli instances
+Supporting mutli instances!
 
 ## requiments
 
@@ -16,7 +16,7 @@ suppoting mutli instances
 ## usage
 
 ```bash
-./mast help
+$ ./mast help
 ```
 
 ### init
@@ -35,15 +35,17 @@ friends.nico
 # make your app (API client)
 $ ./mast create-app "(app-name)"
 
-# this command save a config file:
+# this command saves a config file:
 # ~/.mast/(server)/app.json
 
 # auth your account
-./mast auth
-(auth on your browser)
-(copy&paste code)
+$ ./mast auth
 
-# this command save a config file:
+# starting authorization on your browser
+# Accept if you can
+# and copy&paste the CODE
+
+# this command saves a config file:
 # ~/.mast/(server)/auth.json
 
 ```
@@ -51,6 +53,6 @@ $ ./mast create-app "(app-name)"
 #### toot
 
 ```bash
-./mast toot "Hi world!"
+$ ./mast toot "Hi world!"
 ```
 
