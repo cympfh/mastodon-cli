@@ -128,6 +128,7 @@ auth() {
 timeline-from() {
     URL="https://$(server)/$1"
     curl -s -XGET -H "Authorization: Bearer $(user-token)" "$URL" |
+    sed 's/<[^>]*>//g; s/http/ &/g; s/  */ /g' |
     jq -r 'reverse | .[] |
         {
             id,
@@ -138,9 +139,12 @@ timeline-from() {
             reblog
         } |
         if .reblog == null then
-            "\u001b[33m\(.nick) \u001b[91m@\(.name) \u001b[33m\(.created_at) \u001b[37m\(.id) \n\u001b[0m  \(.text)"
+            "\u001b[33m\(.nick) \u001b[91m@\(.name) \u001b[33m\(.created_at) \u001b[37m\(.id) \n"
+            + "\u001b[0m  \(.text)"
         else
-            "\u001b[33m\(.nick) \u001b[91m@\(.name) RT\n\u001b[37m>\u001b[0m  \u001b[33m\(.reblog.account.display_name) \u001b[91m@\(.reblog.account.username) \u001b[33m\(.reblog.created_at) \u001b[37m\(.reblog.id) \n\u001b[37m>\u001b[0m    \(.reblog.content)"
+            "\u001b[33m\(.nick) \u001b[91m@\(.name) RT\n"
+            + "\u001b[37m>\u001b[0m  \u001b[33m\(.reblog.account.display_name) \u001b[91m@\(.reblog.account.username) \u001b[33m\(.reblog.created_at) \u001b[37m\(.reblog.id) \n"
+            + "\u001b[37m>\u001b[0m    \(.reblog.content)"
         end'
 }
 
