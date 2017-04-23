@@ -34,8 +34,9 @@ mast public [--local]
 
 # post
 
-mast toot "<status>"
+mast toot [-f "<image>"] "<status>"
     toot (tweet) a text
+    upload an image file, specified url or local-path
 
 mast toot --rm "<status-id>"
     delete your toot
@@ -86,6 +87,26 @@ user-token() {
     else
         false
     fi
+}
+
+media-upload() {
+    MEDIA=$1
+    case "$MEDIA" in
+        http*)
+            LOC="/tmp/${MEDIA##*/}"
+            wget --quiet -O "$LOC" "$MEDIA"
+            ;;
+        *)
+            LOC=$MEDIA
+            ;;
+    esac
+
+    URL="https://$(server)/api/v1/media"
+    curl -s -XPOST \
+        -H "Authorization: Bearer $(user-token)" \
+        -F file=@"$LOC" \
+        "$URL" |
+    jq .id
 }
 
 # commands
@@ -165,21 +186,38 @@ public() {
 
 toot() {
     URL="https://$(server)/api/v1/statuses"
+    MEDIA=
     MSG=
 
     while [ "_$1" != "_" ]; do
-      if [ "_$MSG" == "_" ]; then
-        MSG="$1"
-      else
-        MSG="$MSG $1"
-      fi
-      shift
+        case "$1" in
+            -f )
+                MEDIA=$2
+                shift 2
+                ;;
+            * )
+                if [ "_$MSG" == "_" ]; then
+                    MSG="$1"
+                else
+                    MSG="$MSG $1"
+                fi
+                shift
+                ;;
+        esac
     done
 
-    curl -s -XPOST \
-        -H "Authorization: Bearer $(user-token)" \
-        "$URL" \
-        -d "status=$MSG"
+    if [ "_$MEDIA" = "_" ]; then
+        curl -s -XPOST \
+            -H "Authorization: Bearer $(user-token)" \
+            "$URL" \
+            -d "status=$MSG"
+    else
+        MEDIA_ID=$(media-upload "$MEDIA")
+        curl -s -XPOST \
+            -H "Authorization: Bearer $(user-token)" \
+            "$URL" \
+            -d "status=$MSG&media_ids[]=$MEDIA_ID"
+    fi
 }
 
 toot-rm() {
