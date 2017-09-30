@@ -10,8 +10,9 @@ Supporting mutli instances!
 
 ## reference
 
-1. https://github.com/tootsuite/documentation/blob/master/Using-the-API/API.md
-1. https://github.com/tootsuite/documentation/blob/master/Using-the-API/Testing-with-cURL.md
+1. REST API: https://github.com/tootsuite/documentation/blob/master/Using-the-API/API.md
+1. Streaming API: https://github.com/tootsuite/documentation/blob/master/Using-the-API/Streaming-API.md
+1. for cURL: https://github.com/tootsuite/documentation/blob/master/Using-the-API/Testing-with-cURL.md
 
 ## usage
 
