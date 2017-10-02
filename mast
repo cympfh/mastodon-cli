@@ -218,7 +218,7 @@ home() {
 }
 
 public() {
-    if [ "$2" = "--local" ]; then
+    if [ "$1" = "--local" ]; then
         timeline-from "/api/v1/timelines/public?local=local"
     else
         timeline-from "/api/v1/timelines/public"
@@ -230,7 +230,7 @@ stream-user() {
 }
 
 stream-public() {
-    if [ "$2" = "--local" ]; then
+    if [ "$1" = "--local" ]; then
         stream-from "/api/v1/streaming/public?local=local"
     else
         stream-from "/api/v1/streaming/public"
