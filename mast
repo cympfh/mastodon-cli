@@ -90,7 +90,7 @@ browser-open() {
 }
 
 url-trim() {
-    echo "$1" | sed 's,//,/,g'
+    echo "$1" | sed 's,\([^:]/\)/,\1,g'
 }
 
 user-token() {
