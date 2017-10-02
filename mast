@@ -335,8 +335,8 @@ case "$1" in
     public )
         public "$2"
         ;;
-    stream-home )
-        stream-home
+    stream-home | stream-user )
+        stream-user
         ;;
     stream-public )
         stream-public
