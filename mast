@@ -169,7 +169,7 @@ auth() {
 timeline-from() {
     URL=$(url-trim "https://$(server)/$1")
     curl -s -XGET -H "Authorization: Bearer $(user-token)" "$URL" |
-    sed -u 's/<[^>]*>//g; s/http/ &/g; s/  */ /g' |
+    sed 's/<[^>]*>//g; s/http/ &/g; s/  */ /g' |
     jq -r 'reverse | .[] |
         {
             id,
@@ -194,7 +194,7 @@ stream-from() {
     curl -s -XGET -H "Authorization: Bearer $(user-token)" "$URL" |
     grep --line-buffered '^data: {' |
     sed -u 's/^data: //g' |
-    jq -r '
+    jq --unbuffered -r '
         {
             id,
             created_at,
