@@ -1,0 +1,37 @@
+#compdef mast
+
+_mast_instances() {
+    ls -1 ~/.mast | grep '.*\..*'
+}
+
+_mast() {
+    local curcontext="$curcontext" state line help="-h --help"
+    integer ret=1
+    typeset -A opt_args
+    _arguments \
+        '(- *)'{-h,--help}'[show help]' \
+        '*: :->modes'
+
+    case $words[$(( $CURRENT - 1 ))] in
+        use )
+            _values instance $(_mast_instances)
+            ;;
+        mast )
+            _values mode \
+                'use[change/check instance server]' \
+                'create-app[create new client on the instance server]' \
+                'auth[make authorizaion]' \
+                'home[GET home timeline]' \
+                'public[GET public timeline]' \
+                'stream-home[GET home timeline streaming]' \
+                'stream-public[GET public timeline streaming]' \
+                'stream-hashtag[GET hashtag timeline streaming]' \
+                'toot[make/remove a toot]' \
+                'reblog[make a reblog]' \
+                'fav[make a favoriate]'
+            ;;
+    esac
+
+}
+
+_mast "$@"
