@@ -230,7 +230,11 @@ stream-user() {
 }
 
 stream-public() {
-    stream-from "/api/v1/streaming/public"
+    if [ "$2" = "--local" ]; then
+        stream-from "/api/v1/streaming/public?local=local"
+    else
+        stream-from "/api/v1/streaming/public"
+    fi
 }
 
 stream-hashtag() {

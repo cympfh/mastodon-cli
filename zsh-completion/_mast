@@ -16,6 +16,10 @@ _mast() {
         use )
             _values instance $(_mast_instances)
             ;;
+        public | stream-public )
+            _values option \
+                '--local[public timeline of the local instance]'
+            ;;
         mast )
             _values mode \
                 'use[change/check instance server]' \
