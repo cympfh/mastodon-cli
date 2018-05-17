@@ -47,6 +47,12 @@ mast reblog [--rm] "<status-id>"
 mast fav [--rm] "<status-id>"
     create (or destroy) a fav
 
+# RESTs
+
+mast GET <endpoint>
+    Server address must omit from <endpoint>
+    e.g. mast GET /api/v1/accounts/10/statuses
+
 USAGE
 }
 
@@ -107,6 +113,11 @@ media-upload() {
         -F file=@"$LOC" \
         "$URL" |
     jq .id
+}
+
+get() {
+    URL="https://$(server)$1"
+    curl -XGET -s -H "Authorization: Bearer $(user-token)" "$URL"
 }
 
 # commands
@@ -299,6 +310,9 @@ case "$1" in
         else
             fav "$2"
         fi
+        ;;
+    GET )
+        get "$2"
         ;;
     * )
         usage
