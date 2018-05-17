@@ -32,6 +32,15 @@ mast home
 mast public [--local]
     public timeline
 
+mast stream-home
+    Streaming home timeline
+
+mast stream-public
+    Streaming public timeline
+
+mast stream-hashtag "<hashtag>"
+    '#' isn't required
+
 # post
 
 mast toot [-f "<image>"] "<status>"
@@ -84,6 +93,10 @@ browser-open() {
         echo "Manually, open $1"
         false
     fi
+}
+
+url-trim() {
+    echo "$1" | sed 's,\([^:]/\)/,\1,g'
 }
 
 user-token() {
@@ -160,11 +173,39 @@ auth() {
         "$TOKEN_URL" > "$F"
 }
 
+#
+# timelines
+#
+
 timeline-from() {
-    URL="https://$(server)/$1"
+    URL=$(url-trim "https://$(server)/$1")
     curl -s -XGET -H "Authorization: Bearer $(user-token)" "$URL" |
     sed 's/<[^>]*>//g; s/http/ &/g; s/  */ /g' |
     jq -r 'reverse | .[] |
+        {
+            id,
+            created_at,
+            name: .account.username,
+            nick: .account.display_name,
+            text: .content,
+            reblog
+        } |
+        if .reblog == null then
+            "\u001b[33m\(.nick) \u001b[91m@\(.name) \u001b[33m\(.created_at) \u001b[37m\(.id) \n"
+            + "\u001b[0m  \(.text)"
+        else
+            "\u001b[33m\(.nick) \u001b[91m@\(.name) RT\n"
+            + "\u001b[37m>\u001b[0m  \u001b[33m\(.reblog.account.display_name) \u001b[91m@\(.reblog.account.username) \u001b[33m\(.reblog.created_at) \u001b[37m\(.reblog.id) \n"
+            + "\u001b[37m>\u001b[0m    \(.reblog.content)"
+        end'
+}
+
+stream-from() {
+    URL=$(url-trim "https://$(server)/$1")
+    curl -s -XGET -H "Authorization: Bearer $(user-token)" "$URL" |
+    grep --line-buffered '^data: {' |
+    sed -u 's/^data: //g' |
+    jq --unbuffered -r '
         {
             id,
             created_at,
@@ -188,12 +229,32 @@ home() {
 }
 
 public() {
-    if [ "$2" = "--local" ]; then
+    if [ "$1" = "--local" ]; then
         timeline-from "/api/v1/timelines/public?local=local"
     else
         timeline-from "/api/v1/timelines/public"
     fi
 }
+
+stream-user() {
+    stream-from "/api/v1/streaming/user"
+}
+
+stream-public() {
+    if [ "$1" = "--local" ]; then
+        stream-from "/api/v1/streaming/public?local=local"
+    else
+        stream-from "/api/v1/streaming/public"
+    fi
+}
+
+stream-hashtag() {
+    stream-from "/api/v1/streaming/hashtag?tag=$1"
+}
+
+#
+# actions
+#
 
 toot() {
     URL="https://$(server)/api/v1/statuses"
@@ -288,6 +349,15 @@ case "$1" in
         ;;
     public )
         public "$2"
+        ;;
+    stream-home | stream-user )
+        stream-user
+        ;;
+    stream-public )
+        stream-public
+        ;;
+    stream-hashtag )
+        stream-hashtag "$2"
         ;;
     toot | report )
         if [ "$2" = "--rm" ]; then
