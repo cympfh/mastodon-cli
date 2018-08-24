@@ -125,7 +125,7 @@ media-upload() {
         -H "Authorization: Bearer $(user-token)" \
         -F file=@"$LOC" \
         "$URL" |
-    jq .id
+    jq -r .id
 }
 
 get() {

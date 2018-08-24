@@ -20,6 +20,9 @@ _mast() {
             _values option \
                 '--local[public timeline of the local instance]'
             ;;
+        -f )
+            _files
+            ;;
         mast )
             _values mode \
                 'use[change/check instance server]' \
