@@ -258,13 +258,13 @@ stream-hashtag() {
 
 toot() {
     URL="https://$(server)/api/v1/statuses"
-    MEDIA=
+    MEDIA=()
     MSG=
 
     while [ "_$1" != "_" ]; do
         case "$1" in
             -f )
-                MEDIA=$2
+                MEDIA+=( "$(media-upload "$2")" )
                 shift 2
                 ;;
             * )
@@ -278,18 +278,15 @@ toot() {
         esac
     done
 
-    if [ "_$MEDIA" = "_" ]; then
-        curl -s -XPOST \
-            -H "Authorization: Bearer $(user-token)" \
-            "$URL" \
-            -d "status=$MSG"
-    else
-        MEDIA_ID=$(media-upload "$MEDIA")
-        curl -s -XPOST \
-            -H "Authorization: Bearer $(user-token)" \
-            "$URL" \
-            -d "status=$MSG&media_ids[]=$MEDIA_ID"
-    fi
+    DATA="status=$MSG"
+    for m in "${MEDIA[@]}"; do
+        DATA="$DATA&media_ids[]=$m"
+    done
+
+    curl -s -XPOST \
+        -H "Authorization: Bearer $(user-token)" \
+        -d "$DATA" \
+        "$URL"
 }
 
 toot-rm() {
