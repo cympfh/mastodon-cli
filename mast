@@ -43,7 +43,7 @@ mast stream-hashtag "<hashtag>"
 
 # post
 
-mast toot [-f "<image>"] "<status>"
+mast toot [-f "<image>"] [--unlisted] "<status>"
     toot (tweet) a text
     upload an image file, specified url or local-path
 
@@ -260,12 +260,17 @@ toot() {
     URL="https://$(server)/api/v1/statuses"
     MEDIA=()
     MSG=
+    UNLISTED=0
 
     while [ "_$1" != "_" ]; do
         case "$1" in
             -f )
                 MEDIA+=( "$(media-upload "$2")" )
                 shift 2
+                ;;
+            --unlisted )
+                UNLISTED=1
+                shift
                 ;;
             * )
                 if [ "_$MSG" == "_" ]; then
@@ -279,6 +284,11 @@ toot() {
     done
 
     DATA="status=$MSG"
+
+    if [ $UNLISTED -eq 1 ]; then
+        DATA="$DATA&visibility=unlisted"
+    fi
+
     for m in "${MEDIA[@]}"; do
         DATA="$DATA&media_ids[]=$m"
     done
