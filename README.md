@@ -17,30 +17,33 @@ Supporting mutli instances!
 ## usage
 
 ```bash
-$ ./mast help
+# set PATH
+$ export PATH=~/path/to/mastodon-cli/bin:$PATH
+# run
+$ mast help
 ```
 
 ### init
 
 ```bash
 # register a mastodon instance (server)
-$ ./mast use kirakiratter.com
+$ mast use mstdn.jp
 
 # `mast use` command can switch to another instance
-$ ./mast use friends.nico
+$ mast use friends.nico
 
 # check the default instance
-$ ./mast use
+$ mast use
 friends.nico
 
 # make your app (API client)
-$ ./mast create-app "(app-name)"
+$ mast create-app "(app-name)"
 
 # this command saves a config file:
 # ~/.mast/(server)/app.json
 
 # auth your account
-$ ./mast auth
+$ mast auth
 
 # starting authorization on your browser
 # Accept if you can
@@ -54,6 +57,6 @@ $ ./mast auth
 #### toot
 
 ```bash
-$ ./mast toot "Hi world!"
+$ mast toot "Hi world!"
 ```
 
