@@ -283,6 +283,7 @@ toot() {
         esac
     done
 
+    MSG=$(echo "$MSG" | uri-encode)
     DATA="status=$MSG"
 
     if [ $UNLISTED -eq 1 ]; then
