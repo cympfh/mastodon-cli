@@ -128,9 +128,28 @@ media-upload() {
     jq -r .id
 }
 
-get() {
+http-get() {
     URL="https://$(server)$1"
-    curl -XGET -s -H "Authorization: Bearer $(user-token)" "$URL"
+    shift
+    curl -XGET -s -H "Authorization: Bearer $(user-token)" "$URL" $@
+}
+
+http-post() {
+    URL="https://$(server)$1"
+    shift
+    curl -XPOST -s -H "Authorization: Bearer $(user-token)" "$URL" $@
+}
+
+http-put() {
+    URL="https://$(server)$1"
+    shift
+    curl -XPUT -s -H "Authorization: Bearer $(user-token)" "$URL" $@
+}
+
+http-patch() {
+    URL="https://$(server)$1"
+    shift
+    curl -XPATCH -s -H "Authorization: Bearer $(user-token)" "$URL" $@
 }
 
 # commands
@@ -389,7 +408,16 @@ case "$1" in
         fi
         ;;
     GET )
-        get "$2"
+        http-get "$2"
+        ;;
+    POST )
+        http-post "$2"
+        ;;
+    PUT )
+        http-put "$2"
+        ;;
+    PATCH )
+        http-patch "$2"
         ;;
     * )
         usage
