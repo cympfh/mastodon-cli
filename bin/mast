@@ -385,7 +385,7 @@ case "$1" in
         stream-user
         ;;
     stream-public )
-        stream-public
+        stream-public "$2"
         ;;
     stream-hashtag )
         stream-hashtag "$2"
