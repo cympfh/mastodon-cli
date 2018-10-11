@@ -113,7 +113,7 @@ media-upload() {
     case "$MEDIA" in
         http*)
             LOC="/tmp/${MEDIA##*/}"
-            wget --quiet -O "$LOC" "$MEDIA"
+            wget -4 --quiet -O "$LOC" "$MEDIA"
             ;;
         *)
             LOC=$MEDIA
