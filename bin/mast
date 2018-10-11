@@ -302,6 +302,10 @@ toot() {
         esac
     done
 
+    if [ "$MSG" == "-" ]; then
+        MSG=$(cat)
+    fi
+
     MSG=$(echo "$MSG" | uri-encode)
     DATA="status=$MSG"
 
