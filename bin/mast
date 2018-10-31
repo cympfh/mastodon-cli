@@ -61,6 +61,10 @@ mast fav [--rm] "<status-id>"
 mast GET <endpoint>
     Server address must omit from <endpoint>
     e.g. mast GET /api/v1/accounts/10/statuses
+mast POST <endpoint>
+mast PUT <endpoint>
+mast DELETE <endpoint>
+mast PATCH <endpoint>
 
 USAGE
 }
@@ -144,6 +148,12 @@ http-put() {
     URL="https://$(server)$1"
     shift
     curl -XPUT -s -H "Authorization: Bearer $(user-token)" "$URL" $@
+}
+
+http-delete() {
+    URL="https://$(server)$1"
+    shift
+    curl -XDELETE -s -H "Authorization: Bearer $(user-token)" "$URL" $@
 }
 
 http-patch() {
@@ -420,6 +430,9 @@ case "$1" in
         ;;
     PUT )
         http-put "$2"
+        ;;
+    DELETE )
+        http-delete "$2"
         ;;
     PATCH )
         http-patch "$2"
