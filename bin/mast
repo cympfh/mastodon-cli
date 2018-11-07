@@ -375,7 +375,7 @@ fav-rm() {
 }
 
 remote-follow() {
-    http-post /api/v1/follows -d uri=vi@niu.moe
+    http-post /api/v1/follows -d uri="$1"
 }
 
 remote-follow-rm() {
