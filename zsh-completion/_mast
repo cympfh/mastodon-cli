@@ -35,7 +35,8 @@ _mast() {
                 'stream-hashtag[GET hashtag timeline streaming]' \
                 'toot[make/remove a toot]' \
                 'reblog[make a reblog]' \
-                'fav[make a favoriate]'
+                'fav[make a favoriate]' \
+                'remote-follow[follows a remote account]'
             ;;
     esac
 

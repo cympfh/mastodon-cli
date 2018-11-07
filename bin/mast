@@ -56,6 +56,8 @@ mast reblog [--rm] "<status-id>"
 mast fav [--rm] "<status-id>"
     create (or destroy) a fav
 
+mast remote-follow [--rm] "<remote@acct>"
+
 # RESTs
 
 mast GET <endpoint>
@@ -368,6 +370,14 @@ fav-rm() {
         "$URL"
 }
 
+remote-follow() {
+    http-post /api/v1/follows -d uri=vi@niu.moe
+}
+
+remote-follow-rm() {
+    echo not Implemented
+}
+
 # main
 
 case "$1" in
@@ -420,6 +430,13 @@ case "$1" in
             fav-rm "$3"
         else
             fav "$2"
+        fi
+        ;;
+    remote-follow )
+        if [ "$2" = "--rm" ]; then
+            remote-follow-rm "$3"
+        else
+            remote-follow "$2"
         fi
         ;;
     GET )
