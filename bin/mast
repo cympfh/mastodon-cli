@@ -426,16 +426,20 @@ case "$1" in
         http-get "$2"
         ;;
     POST )
-        http-post "$2"
+        shift
+        http-post "$@"
         ;;
     PUT )
-        http-put "$2"
+        shift
+        http-put "$@"
         ;;
     DELETE )
-        http-delete "$2"
+        shift
+        http-delete "$@"
         ;;
     PATCH )
-        http-patch "$2"
+        shift
+        http-patch "$@"
         ;;
     * )
         usage
