@@ -74,14 +74,18 @@ USAGE
 # helpers
 server() {
     if [ -f ~/.mast/default ]; then
-        < ~/.mast/default tr -d '\n'
+        if [ "$1" == full ]; then
+            < ~/.mast/default tr -d '\n'
+        else
+            sed 's/^.*@//g' ~/.mast/default | tr -d '\n'
+        fi
     else
         false
     fi
 }
 
 app-token() {
-    F="$HOME/.mast/$(server)/app.json"
+    F="$HOME/.mast/$(server full)/app.json"
     if [ -f "$F" ]; then
         jq -r '"\(.client_id)\n\(.client_secret)"' "$F"
     else
@@ -106,7 +110,7 @@ url-trim() {
 }
 
 user-token() {
-    F="$HOME/.mast/$(server)/auth.json"
+    F="$HOME/.mast/$(server full)/auth.json"
     if [ -f "$F" ]; then
         jq -r '.access_token' "$F"
     else
@@ -170,7 +174,7 @@ use() {
         mkdir ~/.mast/"$1"
     fi
     echo "$1" > ~/.mast/default
-    echo "Your mastodon server is https://$(server)/"
+    echo "Your mastodon server is https://$(server full)/"
 }
 
 create-app() {
@@ -383,7 +387,7 @@ remote-follow-rm() {
 case "$1" in
     use )
         if [ $# -eq 1 ]; then
-            server
+            server full
             echo
         else
             use "$2"
