@@ -56,11 +56,17 @@ mast reblog [--rm] "<status-id>"
 mast fav [--rm] "<status-id>"
     create (or destroy) a fav
 
+mast remote-follow [--rm] "<remote@acct>"
+
 # RESTs
 
 mast GET <endpoint>
     Server address must omit from <endpoint>
     e.g. mast GET /api/v1/accounts/10/statuses
+mast POST <endpoint>
+mast PUT <endpoint>
+mast DELETE <endpoint>
+mast PATCH <endpoint>
 
 USAGE
 }
@@ -68,14 +74,18 @@ USAGE
 # helpers
 server() {
     if [ -f ~/.mast/default ]; then
-        < ~/.mast/default tr -d '\n'
+        if [ "$1" == full ]; then
+            < ~/.mast/default tr -d '\n'
+        else
+            sed 's/^.*@//g' ~/.mast/default | tr -d '\n'
+        fi
     else
         false
     fi
 }
 
 app-token() {
-    F="$HOME/.mast/$(server)/app.json"
+    F="$HOME/.mast/$(server full)/app.json"
     if [ -f "$F" ]; then
         jq -r '"\(.client_id)\n\(.client_secret)"' "$F"
     else
@@ -100,7 +110,7 @@ url-trim() {
 }
 
 user-token() {
-    F="$HOME/.mast/$(server)/auth.json"
+    F="$HOME/.mast/$(server full)/auth.json"
     if [ -f "$F" ]; then
         jq -r '.access_token' "$F"
     else
@@ -113,7 +123,7 @@ media-upload() {
     case "$MEDIA" in
         http*)
             LOC="/tmp/${MEDIA##*/}"
-            wget -L --quiet -O "$LOC" "$MEDIA"
+            wget -L -4 --quiet -O "$LOC" "$MEDIA"
             ;;
         *)
             LOC=$MEDIA
@@ -146,6 +156,12 @@ http-put() {
     curl -XPUT -s -H "Authorization: Bearer $(user-token)" "$URL" $@
 }
 
+http-delete() {
+    URL="https://$(server)$1"
+    shift
+    curl -XDELETE -s -H "Authorization: Bearer $(user-token)" "$URL" $@
+}
+
 http-patch() {
     URL="https://$(server)$1"
     shift
@@ -158,7 +174,7 @@ use() {
         mkdir ~/.mast/"$1"
     fi
     echo "$1" > ~/.mast/default
-    echo "Your mastodon server is https://$(server)/"
+    echo "Your mastodon server is https://$(server full)/"
 }
 
 create-app() {
@@ -302,6 +318,10 @@ toot() {
         esac
     done
 
+    if [ "$MSG" == "-" ]; then
+        MSG=$(cat)
+    fi
+
     MSG=$(echo "$MSG" | uri-encode)
     DATA="status=$MSG"
 
@@ -354,12 +374,20 @@ fav-rm() {
         "$URL"
 }
 
+remote-follow() {
+    http-post /api/v1/follows -d uri="$1"
+}
+
+remote-follow-rm() {
+    echo not Implemented
+}
+
 # main
 
 case "$1" in
     use )
         if [ $# -eq 1 ]; then
-            server
+            server full
             echo
         else
             use "$2"
@@ -381,7 +409,7 @@ case "$1" in
         stream-user
         ;;
     stream-public )
-        stream-public
+        stream-public "$2"
         ;;
     stream-hashtag )
         stream-hashtag "$2"
@@ -408,17 +436,31 @@ case "$1" in
             fav "$2"
         fi
         ;;
+    remote-follow )
+        if [ "$2" = "--rm" ]; then
+            remote-follow-rm "$3"
+        else
+            remote-follow "$2"
+        fi
+        ;;
     GET )
         http-get "$2"
         ;;
     POST )
-        http-post "$2"
+        shift
+        http-post "$@"
         ;;
     PUT )
-        http-put "$2"
+        shift
+        http-put "$@"
+        ;;
+    DELETE )
+        shift
+        http-delete "$@"
         ;;
     PATCH )
-        http-patch "$2"
+        shift
+        http-patch "$@"
         ;;
     * )
         usage

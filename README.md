@@ -1,6 +1,7 @@
 # mastodon CLI client
 
-Supporting mutli instances!
+cURL like command-line tool for mastodon,
+supporting multiple instances/accounts!
 
 ## requiments
 
@@ -60,3 +61,25 @@ $ mast auth
 $ mast toot "Hi world!"
 ```
 
+#### multiple accounts on an instance
+
+First, `mast use <domain>` makes a directory `~/.mast/<domain>`,
+and authorization files will be made in it.
+The auth files will be overwritten when another account log-in the domain.
+So please rename the directory
+
+```bash
+mv ~/.mast/<domain> ~/.mast/<username>@<domain>
+```
+
+before log-in with another account.
+
+You can specify the directory name.
+
+```bash
+$ mast use ampeloss@mstdn.jp
+Your mastodon server is https://ampeloss@mstdn.jp/
+$ mast use
+ampeloss@mstdn.jp
+$ mast toot "Toot from ampeloss"
+```
