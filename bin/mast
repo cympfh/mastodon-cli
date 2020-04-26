@@ -181,7 +181,7 @@ create-app() {
     URL="https://$(server)/api/v1/apps"
     CLIENT_NAME="$1"
     REDIRECT_URI="urn:ietf:wg:oauth:2.0:oob"
-    F="$HOME/.mast/$(server)/app.json"
+    F="$HOME/.mast/$(server full)/app.json"
     curl -s -XPOST "$URL" -d "client_name=$CLIENT_NAME&redirect_uris=$REDIRECT_URI&scopes=read%20write%20follow" >"$F"
 }
 
@@ -197,7 +197,7 @@ auth() {
     read CODE
 
     TOKEN_URL="https://$(server)/oauth/token"
-    F="$HOME/.mast/$(server)/auth.json"
+    F="$HOME/.mast/$(server full)/auth.json"
 
     curl -s -X POST \
         -F "client_id=$CLIENT_ID" \
